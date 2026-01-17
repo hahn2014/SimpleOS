@@ -62,14 +62,16 @@ clean:
 	rm $(IMG_NAME).img
 
 run: build
-	qemu-system-arm -m 1024 -no-reboot -M raspi2 -serial stdio -kernel SimpleOS.elf
+	qemu-system-arm -m 1024 -no-reboot -M raspi2b -serial stdio -kernel $(IMG_NAME).elf
 
 dbg:
-	$(GDB) kernel.elf
+	$(GDB) $(IMG_NAME).elf
+
 dbgrun: build gdbinit
-	qemu-system-arm -m 1024 -no-reboot -M raspi2 -serial stdio -kernel SimpleOS.elf -S -s
+	qemu-system-arm -m 1024 -no-reboot -M raspi2b -serial stdio -kernel $(IMG_NAME).elf -S -s
 
 .PHONY: gdbinit
+
 gdbinit:
 	echo "target remote localhost:1234" > .gdbinit
 	echo "break kernel_main" >> .gdbinit
