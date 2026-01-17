@@ -8,6 +8,12 @@ _start:
     cmp r1, #0
     bne halt
 
+    /* Copy vector table to 0x00000000 */
+    ldr r0, =vector_table       /* source: address of our table */
+    mov r1, #0x0000             /* destination: low vectors */
+    ldmia r0!, {r2-r9}          /* load 8 words (32 bytes) into r2-r9 */
+    stmia r1!, {r2-r9}          /* store them at 0x00000000 */
+
     mov sp, #0x8000
 
     ldr r4, =__bss_start

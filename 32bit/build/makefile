@@ -58,8 +58,8 @@ $(OBJ_DIR)/%.o: $(COMMON_SRC)/%.c
 
 clean:
 	rm -rf $(OBJ_DIR)
-	rm $(IMG_NAME).elf
-	rm $(IMG_NAME).img
+	rm -f $(IMG_NAME).elf
+	rm -f $(IMG_NAME).img
 
 run: build
 	qemu-system-arm -m 1024 -no-reboot -M raspi2b -serial stdio -kernel $(IMG_NAME).elf

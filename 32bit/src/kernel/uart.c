@@ -94,6 +94,12 @@ void uart_init() {
     // Write 0 to GPPUDCLK0 to make it take effect.
     mmio_write(GPPUDCLK0, 0x00000000);
 
+    // Set GPIO 14 and 15 to Alt0 (UART0 TXD0/RXD0)
+    uint32_t gpfsel1 = mmio_read(GPIO_BASE + 0x04);  // GPFSEL1
+    gpfsel1 &= ~((7 << 12) | (7 << 15));              // Clear bits for pin 14 and 15
+    gpfsel1 |=  (4 << 12) | (4 << 15);                // Set Alt0 (binary 100)
+    mmio_write(GPIO_BASE + 0x04, gpfsel1);
+
     // Clear pending interrupts.
     mmio_write(UART0_ICR, 0x7FF);
 

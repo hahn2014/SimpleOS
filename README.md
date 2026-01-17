@@ -41,7 +41,9 @@ We are actively developing the **32-bit version** for Raspberry Pi 1, 2b & 3. Th
 - [x] Multi-core safe boot (core 0 runs, others parked)
 - [x] Reliable early UART console (PL011 for QEMU reliability, conditional GPIO mux for real hardware)
 - [x] Basic `puts` / `putc` / `getc` with echo loop
-- [ ] Robust exception vector table (synchronous, IRQ, FIQ, SError)
+- [x] stdio and stdlib building for more diverse terminal output.
+- [x] Robust exception vector table (synchronous, IRQ, FIQ, SError)
+- [ ] Hex terminal colors
 - [ ] System timer interrupts
 
 ### Phase 2 – Memory & Scheduling
