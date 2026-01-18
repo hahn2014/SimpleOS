@@ -48,5 +48,7 @@ void* alloc_page(void);
 void free_page(void* ptr);
 void* kmalloc(uint32_t bytes);
 void kfree(void* ptr);
+uint32_t get_total_pages(void);
+uint32_t get_free_pages(void);
 
 #endif

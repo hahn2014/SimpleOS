@@ -16,6 +16,24 @@ _start:
 
     mov sp, #0x8000
 
+    /* Set up banked stack pointers for exception modes */
+    /* All exception modes share the same stack area as SVC */
+    mov     r0, #0x8000
+
+    cps     #0x1B               /* Undefined Instruction mode */
+    mov     sp, r0
+
+    cps     #0x17               /* Abort mode (prefetch + data abort) */
+    mov     sp, r0
+
+    cps     #0x12               /* IRQ mode */
+    mov     sp, r0
+
+    cps     #0x11               /* FIQ mode */
+    mov     sp, r0
+
+    cps     #0x13               /* Back to SVC mode */
+
     ldr r4, =__bss_start
     ldr r9, =__bss_end
     mov r5, #0

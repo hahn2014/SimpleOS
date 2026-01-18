@@ -1,39 +1,21 @@
 .section .text
-.align 11                   /* Align to 2KB - not strictly needed for low vectors but harmless */
+.align 5                    /* 32-byte alignment - standard for vector tables */
 
 .global vector_table
 
 vector_table:
-    b reset_handler         /* Reset - not used (kernel loaded directly) */
-    b undefined_handler
-    b svc_handler
-    b prefetch_abort_handler
-    b data_abort_handler
-    nop                     /* Reserved */
-    b irq_handler
-    b fiq_handler
+    b   reset_handler           /* Reset - unused, but branch to safe hang */
+    b   undefined_handler       /* Undefined Instruction - direct to C handler */
+    b   svc_handler             /* Supervisor Call */
+    b   prefetch_abort_handler  /* Prefetch Abort */
+    b   data_abort_handler      /* Data Abort */
+    nop                         /* Reserved - must be a valid instruction (nop is fine) */
+    b   irq_handler             /* IRQ */
+    b   fiq_handler             /* FIQ */
 
 reset_handler:
-    b hang                  /* Fallback if somehow taken */
-
-undefined_handler:
-    b undefined_handler      /* Direct loop to self - C handler will run via attribute */
-
-svc_handler:
-    b svc_handler
-
-prefetch_abort_handler:
-    b prefetch_abort_handler
-
-data_abort_handler:
-    b data_abort_handler
-
-irq_handler:
-    b irq_handler
-
-fiq_handler:
-    b fiq_handler
+    b   hang                    /* Safe fallback */
 
 hang:
     wfi
-    b hang
+    b   hang

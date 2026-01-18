@@ -176,3 +176,11 @@ void kfree(void* ptr) {
         seg->segment_size += seg->next->segment_size;
     }
 }
+
+uint32_t get_total_pages(void) {
+    return num_pages;
+}
+
+uint32_t get_free_pages(void) {
+    return size_page_list(&free_pages);
+}

@@ -1,36 +1,40 @@
 # SimpleOS
 
-![Raspberry Pi](https://img.shields.io/badge/Platform-Raspberry%20Pi-blue?logo=raspberry-pi)
+![Version](https://img.shields.io/badge/alpha-0.02-blue)
+![Raspberry Pi](https://img.shields.io/badge/Platform-Raspberry%20Pi-red?logo=raspberry-pi)
 ![Bare Metal](https://img.shields.io/badge/Type-Bare%20Metal%20OS-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-**SimpleOS** is a from-scratch, educational bare-metal operating system for the Raspberry Pi family, built using Assembly, C, and (eventually) Rust. The goal is to explore low-level systems programming while creating a minimal, efficient kernel that runs directly on the hardware — no Linux, no firmware blobs, just the metal and myself.
+**SimpleOS** is a from-scratch bare-metal operating system for the Raspberry Pi family, built using Assembly, C, and (eventually) Rust. The goal is to explore low-level systems programming while creating a minimal, efficient kernel that runs directly on the hardware — no Linux, no firmware blobs, just the metal and myself.
 
 The repository is structured to support **both 32-bit and 64-bit architectures** in a single codebase where possible:
 
 ```text
 SimpleOS/
-├── 32bit/          # Raspberry Pi 1, Zero, 2, 3 (ARMv7/AArch32)
-├── 64bit/          # Raspberry Pi 4, 5 (AArch64)
+├── 32bit/          # Raspberry Pi 1, Zero, 2 (ARMv7/AArch32)
+├── 64bit/          # Raspberry Pi 3, 4, 5 (AArch64)
 ├── common/         # Shared code (planned)
 └── README.md
 
-The user-facing API and high-level design will be virtually identical across both branches, with architecture-specific differences isolated to boot code, UART drivers, and low-level initialisation.
+The user-facing API and high-level design will be virtually identical across
+both branches, with architecture-specific differences isolated to boot code,
+UART drivers, and low-level initialisation.
 ```
 
 ## Development Status
 
-We are actively developing the **64-bit version** for Raspberry Pi 4 & 5. The kernel currently:
+We are actively developing the **64-bit version** for Raspberry Pi 3, 4 & 5. The kernel currently:
 - Boots in AArch64 EL1
 - Initialises the PL011 UART for early console output
 - Provides a simple echoing terminal
 - Parks secondary cores safely
 - Builds with a clean, freestanding toolchain
 
-We are actively developing the **32-bit version** for Raspberry Pi 1, 2b & 3. The kernel currently:
+We are actively developing the **32-bit version** for Raspberry Pi 1, Zero & 2b. The kernel currently:
 - Boots in AArch32 EL1
 - Initialises the PL011 UART for early console output
-- Provides a simple echoing terminal
+- Initializes memory stack and tests memory functions
+- Mini-shell with interactive user input. very basic with much more to come
 - Parks secondary cores safely
 - Builds with a clean, freestanding toolchain
 
@@ -43,6 +47,7 @@ We are actively developing the **32-bit version** for Raspberry Pi 1, 2b & 3. Th
 - [x] Basic `puts` / `putc` / `getc` with echo loop
 - [x] stdio and stdlib building for more diverse terminal output.
 - [x] Robust exception vector table (synchronous, IRQ, FIQ, SError)
+- [x] Refined debugging and IO with printf
 - [ ] Hex terminal colors
 - [ ] System timer interrupts
 
@@ -69,7 +74,7 @@ We are actively developing the **32-bit version** for Raspberry Pi 1, 2b & 3. Th
 - [ ] USB & keyboard input
 
 ### Long-Term
-- Simple shell
+- Advanced shell
 - User-mode processes
 - Networking
 
@@ -77,7 +82,7 @@ We are actively developing the **32-bit version** for Raspberry Pi 1, 2b & 3. Th
 
 To build and test SimpleOS, you will need:
 
-- **Toolchain**: 
+- [**Toolchain**:](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads)
   - For 64-bit: `aarch64-none-elf-gcc` (ARM GNU Toolchain, Apple Silicon build recommended on macOS)
   - For 32-bit: `arm-none-eabi-gcc`
 - **QEMU**: `qemu-system-aarch64` for 64bit or `qemu-system-arm` for 32bit (QEMU version 8.0 or newer recommended)
@@ -94,15 +99,10 @@ Then download and install the ARM GNU Toolchain from developer.arm.com
 
 Inside the 64bit directory
 ```bash
-make clean
-make
-make run          # Uses -nographic -serial stdio for direct terminal output
+make clean && make && make run
 ```
-You should see:
-```text
-Hello, World!
-```
-followed by an interactive echo loop.
+You should see the debug output for the kernel initialization then be met with a brief interactive shell menu with basic functionality.
+
 To quit QEMU: Ctrl+A then X (or Ctrl+C in some configurations).
 ### Real Hardware
 
