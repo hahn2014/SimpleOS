@@ -54,35 +54,47 @@ void puthex(uint32_t val) {
 void debug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    printf("[DEBUG] ");
-    /* Reuse the printf loop - but since we don't have vprintf yet, inline simple */
-    /* For now, since debug is rarely formatted, keep simple or expand later */
-    printf(fmt, ap);  /* Note: this works because va_arg is sequential */
-    printf("\n");
+    printf(ANSI_FG_MAGENTA "[DEBUG] " ANSI_RESET COLOR_DEFAULT);
+    vprintf(fmt, ap);  /* We'll add vprintf below */
+    printf(ANSI_RESET "\n");
     va_end(ap);
 }
 
-void warning(const char* msg) {
-    puts("[WARNING] ");
-    puts(msg);
-    puts("\n");
+void info(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    printf(ANSI_FG_CYAN "[INFO] " ANSI_RESET COLOR_DEFAULT);
+    vprintf(fmt, ap);
+    printf(ANSI_RESET "\n");
+    va_end(ap);
 }
 
-void info(const char* msg) {
-    puts("[INFO] ");
-    puts(msg);
-    puts("\n");
+void warning(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    printf(ANSI_FG_YELLOW "[WARNING] " ANSI_RESET COLOR_DEFAULT);
+    vprintf(fmt, ap);
+    printf(ANSI_RESET "\n");
+    va_end(ap);
 }
 
-void error(const char* msg) {
-    puts("[ERROR] ");
-    puts(msg);
-    puts("\n");
+void error(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    printf(ANSI_FG_RED "[ERROR] " ANSI_RESET COLOR_DEFAULT);
+    vprintf(fmt, ap);
+    printf(ANSI_RESET "\n");
+    va_end(ap);
 }
 
-void panic(const char* msg) {
-    printf("\n=== KERNEL PANIC ===\n%s\nSystem halted.\n", msg);
+void panic(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    printf(ANSI_BOLD ANSI_BG_RED "\n=== KERNEL PANIC ===\n" ANSI_RESET ANSI_FG_RED);
+    vprintf(fmt, ap);
+    printf(ANSI_RESET "\nSystem halted.\n");
     while (1) asm volatile("wfi");
+    va_end(ap);
 }
 
 static void print_number(unsigned long num, int base, int width, char pad_char, int upper) {
@@ -169,4 +181,63 @@ void printf(const char *fmt, ...) {
     }
 
     va_end(ap);
+}
+
+void vprintf(const char *fmt, va_list ap) {
+    /* Copy va_list for safe reuse */
+    va_list ap_copy;
+    va_copy(ap_copy, ap);
+
+    for (;;) {
+        char c = *fmt++;
+        if (!c) break;
+
+        if (c != '%') {
+            putc(c);
+            continue;
+        }
+
+        /* Same parsing logic as printf - reuse the body */
+        char pad_char = ' ';
+        int width = 0;
+        if (*fmt == '0') {
+            pad_char = '0';
+            fmt++;
+        }
+        while (*fmt >= '0' && *fmt <= '9') {
+            width = width * 10 + (*fmt++ - '0');
+        }
+
+        c = *fmt++;
+        if (c == 's') {
+            const char *s = va_arg(ap_copy, const char *);
+            if (!s) s = "(null)";
+            while (*s) putc(*s++);
+        } else if (c == 'c') {
+            putc(va_arg(ap_copy, int));
+        } else if (c == 'd') {
+            int num = va_arg(ap_copy, int);
+            if (num < 0) {
+                putc('-');
+                num = -num;
+            }
+            print_number((unsigned)num, 10, width, pad_char, 0);
+        } else if (c == 'u') {
+            print_number(va_arg(ap_copy, unsigned), 10, width, pad_char, 0);
+        } else if (c == 'x') {
+            print_number(va_arg(ap_copy, unsigned), 16, width, pad_char, 0);
+        } else if (c == 'X') {
+            print_number(va_arg(ap_copy, unsigned), 16, width, pad_char, 1);
+        } else if (c == 'p') {
+            puts("0x");
+            print_number(va_arg(ap_copy, unsigned long), 16, 8, '0', 0);
+        } else if (c == '%') {
+            putc('%');
+        } else {
+            putc('%');
+            if (c) putc(c);
+        }
+    }
+
+    va_end(ap_copy);
 }

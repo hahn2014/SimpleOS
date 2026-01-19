@@ -14,27 +14,18 @@ static heap_segment_t *heap_segment_list_head;
 static void heap_init(uint32_t heap_start);
 
 void mem_init(atag_t* atags) {
+    info("Initializing Memory Module");
     uint32_t mem_size = 1UL << 30;  // Fixed 1 GiB - exact match for Raspberry Pi 2B and qemu -m 1024
     uint32_t page_array_len, kernel_pages, page_array_end, i;
 
     /* Silence unused parameter warning and print the (likely garbage) ATAG pointer for debug */
     (void)atags;
 
-    puts("[DEBUG] mem_init: raw ATAGs pointer from r2 = ");
-    puthex((uint32_t)atags);
-    puts("\n");
-
-    puts("[DEBUG] Using fixed 1 GiB physical memory size (safe for QEMU and real Pi 2B)\n");
-
-    puts("[DEBUG] Total memory = ");
-    puthex(mem_size);
-    puts(" bytes\n");
-
+    debug("[mem.c] - mem_init: raw ATAGs pointer from r2 = %p", (uint32_t)atags);
+    debug("[mem.c] - Using fixed 1 GiB physical memory size (safe for QEMU and real Pi 2B)");
+    debug("[mem.c] - Total memory = %p bytes", mem_size);
     num_pages = mem_size / PAGE_SIZE;
-
-    puts("[DEBUG] Total pages = ");
-    puthex(num_pages);
-    puts("\n");
+    debug("[mem.c] - Total pages = %p", num_pages);
 
     page_array_len = sizeof(page_t) * num_pages;
     all_pages_array = (page_t*)&__end;
@@ -69,9 +60,7 @@ void mem_init(atag_t* atags) {
     page_array_end = (uint32_t)&__end + page_array_len;
     heap_init(page_array_end);
 
-    puts("[DEBUG] Memory initialization complete. Free pages = ");
-    puthex(size_page_list(&free_pages));
-    puts("\n");
+    info("Memory initialization complete. Free pages = %p", size_page_list(&free_pages));
 }
 
 void* alloc_page(void) {
@@ -101,10 +90,11 @@ void free_page(void* ptr) {
 
     // Get page metadata from the physical address
     page = all_pages_array + ((uint32_t)ptr / PAGE_SIZE);
-
+    debug("[mem.c] - freeing page memory");
     // Mark the page as free
     page->flags.allocated = 0;
     append_page_list(&free_pages, page);
+    debug("[mem.c] - page memory freed succesfully");
 }
 
 
@@ -154,27 +144,38 @@ void* kmalloc(uint32_t bytes) {
 }
 
 void kfree(void* ptr) {
-    heap_segment_t* seg;
+    heap_segment_t *seg;
 
-    if (!ptr)
+    if (!ptr) {
         return;
+    }
 
-    seg = ptr - sizeof(heap_segment_t);
+    seg = (heap_segment_t *)ptr - 1;
     seg->is_allocated = 0;
 
-    // try to coalesce segements to the left
-    while(seg->prev != NULL && !seg->prev->is_allocated) {
-        seg->prev->next = seg->next;
-        seg->next->prev = seg->prev;
+    debug("[mem.c] - kfree: freeing %p (header at %p)", ptr, seg);
+
+    /* Coalesce with previous free segment if possible */
+    if (seg->prev && !seg->prev->is_allocated) {
         seg->prev->segment_size += seg->segment_size;
-        seg = seg->prev;
+        seg->prev->next = seg->next;
+        if (seg->next) {
+            seg->next->prev = seg->prev;
+        }
+        seg = seg->prev;  /* Now operate from the merged previous segment */
     }
-    // try to coalesce segments to the right
-    while(seg->next != NULL && !seg->next->is_allocated) {
-        seg->next->next->prev = seg;
-        seg->next = seg->next->next;
+
+    /* Coalesce with next free segment if possible */
+    if (seg->next && !seg->next->is_allocated) {
         seg->segment_size += seg->next->segment_size;
+        seg->next = seg->next->next;
+        if (seg->next) {
+            seg->next->prev = seg;
+        }
     }
+
+    debug("[mem.c] - kfree: completed for %p (merged header at %p, size now 0x%08X)",
+          ptr, seg, seg->segment_size);
 }
 
 uint32_t get_total_pages(void) {
@@ -183,4 +184,15 @@ uint32_t get_total_pages(void) {
 
 uint32_t get_free_pages(void) {
     return size_page_list(&free_pages);
+}
+
+void test_mem(void) {
+    info("Testing memory allocation...");
+    void* p1 = alloc_page();
+    void* h1 = kmalloc(128);
+    debug("[mem.c] - Page allocated at %p", itoa((uint32_t)p1));
+    debug("[mem.c] - Heap allocated at %p", itoa((uint32_t)h1));
+    free_page(p1);
+    kfree(h1);
+    info("Memory test complete. Memory used in testing has been de-allocated");
 }

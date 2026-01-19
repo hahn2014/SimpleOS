@@ -50,5 +50,6 @@ void* kmalloc(uint32_t bytes);
 void kfree(void* ptr);
 uint32_t get_total_pages(void);
 uint32_t get_free_pages(void);
+void test_mem(void);
 
 #endif

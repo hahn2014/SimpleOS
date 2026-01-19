@@ -1,6 +1,6 @@
 # SimpleOS
 
-![Version](https://img.shields.io/badge/alpha-0.02-blue)
+![Version](https://img.shields.io/badge/alpha-0.03-blue)
 ![Raspberry Pi](https://img.shields.io/badge/Platform-Raspberry%20Pi-red?logo=raspberry-pi)
 ![Bare Metal](https://img.shields.io/badge/Type-Bare%20Metal%20OS-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
@@ -48,12 +48,12 @@ We are actively developing the **32-bit version** for Raspberry Pi 1, Zero & 2b.
 - [x] stdio and stdlib building for more diverse terminal output.
 - [x] Robust exception vector table (synchronous, IRQ, FIQ, SError)
 - [x] Refined debugging and IO with printf
-- [ ] Hex terminal colors
-- [ ] System timer interrupts
+- [x] Hex terminal colors
+- [x] System timer interrupts
 
 ### Phase 2 – Memory & Scheduling
 - [ ] Physical memory manager (frame allocator)
-- [ ] Virtual memory with page tables
+- [x] Virtual memory with page tables
 - [ ] Simple round-robin scheduler
 - [ ] Heap allocation (custom allocator)
 

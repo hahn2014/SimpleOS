@@ -1,4 +1,6 @@
 #include <common/stdio.h>
+#include <kernel/uart.h>
+#include <kernel/timer.h>
 
 /* Helper to get readable mode name from CPSR mode bits */
 static const char* mode_name(uint32_t mode) {
@@ -74,10 +76,15 @@ void data_abort_handler(void) {
 }
 
 void irq_handler(void) {
-    printf("\n=== KERNEL PANIC: Unexpected IRQ ===\n");
-    dump_general();
-    printf("System halted.\n");
-    while (1) asm volatile("wfi");
+    uint32_t cs = mmio_read(TIMER_CS);
+
+    if (cs & TIMER_CS_M1) {
+        timer_handler();
+        return;
+    }
+
+    /* If not our timer, panic with pending status for debug */
+    panic("Unhandled IRQ - timer CS = 0x%08X", cs);
 }
 
 void fiq_handler(void) {

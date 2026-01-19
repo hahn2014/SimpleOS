@@ -1,9 +1,10 @@
 .section .text
-.align 5                    /* 32-byte alignment - standard for vector tables */
+.align 5   /* 32-byte alignment */
 
 .global vector_table
 
 vector_table:
+    /* Direct branches - keep as-is */
     b   reset_handler           /* Reset - unused, but branch to safe hang */
     b   undefined_handler       /* Undefined Instruction - direct to C handler */
     b   svc_handler             /* Supervisor Call */
