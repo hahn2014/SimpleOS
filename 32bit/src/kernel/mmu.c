@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - mmu.c ~                      *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Sets up a flat 1 GiB identity mapping using 1 MiB       *
  *  sections, then enables MMU, data/instruction caches and *

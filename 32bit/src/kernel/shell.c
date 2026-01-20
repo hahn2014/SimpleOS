@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *               ~ SimpleOS - shell.c ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Simple interactive command shell. Provides basic        *
  *  system control and debugging commands.                  *
@@ -15,6 +14,7 @@
 #include <common/stdlib.h>
 #include <kernel/mem.h>
 #include <kernel/timer.h>
+#include <kernel/mmio.h>
 
 /** Prints the list of available shell commands */
 static void cmd_help(void) {
@@ -99,7 +99,7 @@ static void cmd_test_abort(void) {
 
 /** Entry point for the interactive shell - prints banner and enters command loop */
 void shell_run(void) {
-    printf("\n\nSimpleOS v0.03-alpha(arm32) - Interactive Shell\n\n\n");
+    printf("\n\nSimpleOS v0.05-alpha(arm32) - Interactive Shell\n\n\n");
     cmd_help();
 
     while (1) {

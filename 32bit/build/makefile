@@ -1,7 +1,6 @@
 #************************************************************
 #                                                           *
 #                ~ SimpleOS - makefile ~                    *
-#                     version 0.04-alpha                    *
 #                                                           *
 #  Build rules for the SimpleOS kernel (ARM cross-compile). *
 #                                                           *

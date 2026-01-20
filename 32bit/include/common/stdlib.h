@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *               ~ SimpleOS - stdlib.h ~                    *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Minimal standard library replacements for bare-metal.   *
  *  No dependencies on libc.                                *

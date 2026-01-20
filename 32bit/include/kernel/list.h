@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - list.h ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Generic doubly-linked list implementation using macros. *
  *  Zero-overhead container-of pattern.                     *

@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                 ~ SimpleOS - mem.h ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Physical page allocator and simple kernel heap.         *
  *  Pages are tracked with a bitmap-like structure; the     *

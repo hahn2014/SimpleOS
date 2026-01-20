@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - stdio.h ~                    *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Formatted I/O and debug printing built on the UART.     *
  *  Provides printf-family functions suitable for kernel.   *

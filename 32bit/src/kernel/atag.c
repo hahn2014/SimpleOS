@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *               ~ SimpleOS - atag.c ~                      *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Tiny ATAG parser - extracts memory size from firmware   *
  *  provided ATAG list.                                     *

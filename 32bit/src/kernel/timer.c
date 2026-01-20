@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *               ~ SimpleOS - timer.c ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  System timer (1 MHz free-running counter) driver.       *
  *  Provides ~100 Hz tick for uptime and simple delays.     *
@@ -13,6 +12,7 @@
 
 #include <kernel/timer.h>
 #include <kernel/uart.h>
+#include <kernel/mmio.h>
 #include <common/stdio.h>
 
 volatile uint32_t system_ticks = 0;

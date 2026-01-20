@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *               ~ SimpleOS - stdio.c ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Implementation of formatted I/O and helpers.            *
  *  All output goes through the early UART driver.          *

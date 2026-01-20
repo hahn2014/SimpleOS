@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - linker.ld ~                  *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Linker script for the bare-metal kernel. Places code    *
  *  at 0x8000 (standard Raspberry Pi kernel load address).  *

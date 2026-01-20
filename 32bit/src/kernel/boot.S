@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - boot.S ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Early boot code - executed directly by the Raspberry Pi *
  *  firmware with MMU off. Sets up initial stack, clears    *

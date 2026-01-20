@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                 ~ SimpleOS - mmu.h ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Declaration of the Memory Management Unit initialiser.  *
  *  Used to set up translation tables and enable the MMU.   *

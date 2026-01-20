@@ -1,7 +1,7 @@
 /************************************************************
  *                                                          *
  *               ~ SimpleOS - kernel.c ~                    *
- *                     version 0.04-alpha                   *
+ *                  version 0.05-alpha                      *
  *                                                          *
  * Kernel entry point and top-level initialisation sequence *
  *  Called from boot.S after BSS clear.                     *

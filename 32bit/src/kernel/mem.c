@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - mem.c ~                      *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Physical page allocator + simple kernel heap (best-fit  *
  *  with splitting and coalescing). Memory size discovered  *

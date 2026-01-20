@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *            ~ SimpleOS - framebuffer.h ~                  *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Stub header for future Raspberry Pi framebuffer         *
  *  initialisation via the mailbox interface.               *

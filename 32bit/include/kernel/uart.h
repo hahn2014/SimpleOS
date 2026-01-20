@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
- *                 ~ SimpleOS - uart.h ~                     *
- *                     version 0.04-alpha                   *
+ *                 ~ SimpleOS - uart.h ~                    *
  *                                                          *
  *  Declarations for the PL011 UART driver (Raspberry Pi 2  *
  *  and QEMU raspi2b). Polled 115200 8N1 on GPIO 14/15 ALT0.*
@@ -54,12 +53,6 @@ void uart_putc(unsigned char c);
 
 /** Receives a single character (blocking polled) */
 unsigned char uart_getc(void);
-
-/** Writes a 32-bit value to an MMIO register */
-void mmio_write(uint32_t reg, uint32_t data);
-
-/** Reads a 32-bit value from an MMIO register */
-uint32_t mmio_read(uint32_t reg);
 
 /** Simple busy-wait delay used during GPIO/UART setup */
 void delay(int32_t count);

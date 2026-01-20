@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *              ~ SimpleOS - vectors.S ~                    *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Exception vector table and low-level stubs. Required    *
  *  to be 32-byte aligned. Direct branches for most         *

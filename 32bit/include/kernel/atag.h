@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - atag.h ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  ATAG parsing structures and helper. The firmware        *
  *  passes boot information via ATAGs on older Pi models.   *

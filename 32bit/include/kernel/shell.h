@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                ~ SimpleOS - shell.h ~                    *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Declaration of the interactive command shell.           *
  *  The shell is the main user interface after boot.        *

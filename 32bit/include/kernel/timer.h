@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *                 ~ SimpleOS - timer.h ~                   *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Declarations for the BCM283x system timer driver.       *
  *  Provides ~100 Hz tick and simple delay functions.       *

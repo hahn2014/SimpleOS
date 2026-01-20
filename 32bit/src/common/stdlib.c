@@ -1,7 +1,6 @@
 /************************************************************
  *                                                          *
  *              ~ SimpleOS - stdlib.c ~                     *
- *                     version 0.04-alpha                   *
  *                                                          *
  *  Minimal implementations of common libc functions.       *
  *  Optimised for size rather than maximum speed.           *
