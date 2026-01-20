@@ -1,30 +1,39 @@
-# Don't use normal gcc, use the arm cross compiler
+#************************************************************
+#                                                           *
+#                ~ SimpleOS - makefile ~                    *
+#                     version 0.04-alpha                    *
+#                                                           *
+#  Build rules for the SimpleOS kernel (ARM cross-compile). *
+#                                                           *
+#  License: MIT                                             *
+#  Last Modified: January 19 2026                           *
+#  ToDo: Add debug symbols stripping option                 *
+#************************************************************
+
 TOOLCHAIN = arm-none-eabi
 
 CC = $(TOOLCHAIN)-gcc
 OBJCOPY = $(TOOLCHAIN)-objcopy
 GDB = $(TOOLCHAIN)-gdb
 
-
-# Set any constants based on the raspberry pi model.  Version 1 has some differences to 2 and 3
 ifeq ($(RASPI_MODEL),1)
-	CPU = arm1176jzf-s
-	DIRECTIVES = -D MODEL_1
-	ARCHDIR = model1
+    CPU = arm1176jzf-s
+    DIRECTIVES = -D MODEL_1
+    ARCHDIR = model1
 else
-	CPU = cortex-a7
-	ARCHDIR = model2
+    CPU = cortex-a7
+    ARCHDIR = model2
 endif
 
 CFLAGS= -mcpu=$(CPU) -fpic -ffreestanding $(DIRECTIVES) -g
 CSRCFLAGS= -O2 -Wall -Wextra
 LFLAGS= -ffreestanding -O2 -nostdlib
 
-# Location of the files
 KER_SRC = ../src/kernel
 KER_HEAD = ../include
 COMMON_SRC = ../src/common
 OBJ_DIR = objects
+
 KERSOURCES = $(wildcard $(KER_SRC)/*.c)
 KERSOURCES += $(wildcard $(KER_SRC)/$(ARCHDIR)/*.c)
 COMMONSOURCES = $(wildcard $(COMMON_SRC)/*.c)

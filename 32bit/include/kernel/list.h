@@ -1,23 +1,26 @@
-/**
- * Generic doubly-linked list implementation using macros.
- *
- * Usage:
- * 1. In a header (or .c file before use): DEFINE_LIST(mytype)
- *    - Creates mytype_list_t
- * 2. Inside the struct definition: DEFINE_LINK(mytype)
- *    - Adds mytype * nextmytype; mytype * prevmytype;
- * 3. In one .c file: IMPLEMENT_LIST(mytype)
- *    - Defines all the list functions for mytype
- * 4. To initialize: INITIALIZE_LIST(mylist);
- */
-
-#include <stddef.h>
-#include <stdint.h>
+/************************************************************
+ *                                                          *
+ *                ~ SimpleOS - list.h ~                     *
+ *                     version 0.04-alpha                   *
+ *                                                          *
+ *  Generic doubly-linked list implementation using macros. *
+ *  Zero-overhead container-of pattern.                     *
+ *                                                          *
+ *  License: MIT                                            *
+ *  Last Modified: January 19 2026                          *
+ *  ToDo: Add iterator macros and remove-from-list helper   *
+ ************************************************************/
 
 #ifndef LIST_H
 #define LIST_H
 
-/* Define the list container type */
+#include <stddef.h>
+#include <stdint.h>
+
+/**
+ * Defines a list container type for a given node type.
+ * Example: DEFINE_LIST(page) → page_list_t
+ */
 #define DEFINE_LIST(nodeType) \
     typedef struct nodeType##_list { \
         struct nodeType *head; \
@@ -25,12 +28,17 @@
         uint32_t size; \
     } nodeType##_list_t;
 
-/* Define the next/prev pointers inside the node struct */
+/**
+ * Inserts the next/prev pointers into the node struct.
+ * Must be placed inside the struct definition.
+ */
 #define DEFINE_LINK(nodeType) \
     struct nodeType *next##nodeType; \
     struct nodeType *prev##nodeType;
 
-/* Safe multi-statement initializer */
+/**
+ * Initialises a list container to empty state.
+ */
 #define INITIALIZE_LIST(list) \
     do { \
         (list).head = NULL; \
@@ -38,9 +46,14 @@
         (list).size = 0; \
     } while (0)
 
-/* Implement all list operations for the given nodeType */
+/**
+ * Implements all list operations for a specific node type.
+ * Must be placed in exactly one .c file to avoid duplicate
+ * symbols.
+ */
 #define IMPLEMENT_LIST(nodeType) \
 \
+/** Appends a node to the end of the list */ \
 void append_##nodeType##_list(nodeType##_list_t *list, struct nodeType *node) { \
     node->next##nodeType = NULL; \
     node->prev##nodeType = NULL; \
@@ -56,6 +69,7 @@ void append_##nodeType##_list(nodeType##_list_t *list, struct nodeType *node) { 
     list->size += 1; \
 } \
 \
+/** Prepends a node to the beginning of the list */ \
 void push_##nodeType##_list(nodeType##_list_t *list, struct nodeType *node) { \
     node->next##nodeType = list->head; \
     node->prev##nodeType = NULL; \
@@ -67,10 +81,12 @@ void push_##nodeType##_list(nodeType##_list_t *list, struct nodeType *node) { \
     } \
 } \
 \
+/** Returns the head node without removing it */ \
 struct nodeType *peek_##nodeType##_list(nodeType##_list_t *list) { \
     return list->head; \
 } \
 \
+/** Removes and returns the head node */ \
 struct nodeType *pop_##nodeType##_list(nodeType##_list_t *list) { \
     struct nodeType *res; \
     \
@@ -94,12 +110,14 @@ struct nodeType *pop_##nodeType##_list(nodeType##_list_t *list) { \
     return res; \
 } \
 \
+/** Returns current list size */ \
 uint32_t size_##nodeType##_list(nodeType##_list_t *list) { \
     return list->size; \
 } \
 \
+/** Returns the next node after the given node */ \
 struct nodeType *next_##nodeType##_list(struct nodeType *node) { \
     return node->next##nodeType; \
 }
 
-#endif
+#endif /* LIST_H */

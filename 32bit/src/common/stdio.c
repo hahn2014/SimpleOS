@@ -1,14 +1,30 @@
+/************************************************************
+ *                                                          *
+ *               ~ SimpleOS - stdio.c ~                     *
+ *                     version 0.04-alpha                   *
+ *                                                          *
+ *  Implementation of formatted I/O and helpers.            *
+ *  All output goes through the early UART driver.          *
+ *                                                          *
+ *  License: MIT                                            *
+ *  Last Modified: January 19 2026                          *
+ *  ToDo: Add buffer for interrupt-driven UART later        *
+ ************************************************************/
+
 #include <stdarg.h>
 #include <common/stdio.h>
 
+/** Reads a single character from UART (blocking) */
 char getc() {
     return uart_getc();
 }
 
+/** Writes a single character to UART */
 void putc(char c) {
     uart_putc(c);
 }
 
+/** Writes a null-terminated string */
 void puts(const char* str) {
     int i;
     for (i = 0; str[i] != '\0'; i++) {
@@ -16,6 +32,7 @@ void puts(const char* str) {
     }
 }
 
+/** Reads a line with basic editing (backspace/delete) */
 void gets(char* buf, int buflen) {
     int i = 0;
     char c;
@@ -24,9 +41,9 @@ void gets(char* buf, int buflen) {
         if (c == '\b' || c == 0x7F) {            // Backspace or Delete
             if (i > 0) {
                 i--;
-                putc('\b');                     // Move cursor left
-                putc(' ');                      // Overwrite char with space
-                putc('\b');                     // Move cursor back again
+                putc('\b');
+                putc(' ');
+                putc('\b');
             }
         } else if (c >= 32 && c <= 126) {        // Printable ASCII
             if (i < buflen - 1) {
@@ -34,7 +51,6 @@ void gets(char* buf, int buflen) {
                 buf[i++] = c;
             }
         }
-        // Ignore other control chars (e.g., arrow keys, etc.)
     }
 
     putc('\r');
@@ -42,6 +58,7 @@ void gets(char* buf, int buflen) {
     buf[i] = '\0';
 }
 
+/** Prints a 32-bit value in hex with 0x prefix */
 void puthex(uint32_t val) {
     const char *hexdigits = "0123456789ABCDEF";
     puts("0x");
@@ -51,11 +68,12 @@ void puthex(uint32_t val) {
     }
 }
 
+/* Coloured logging helpers */
 void debug(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     printf(ANSI_FG_MAGENTA "[DEBUG] " ANSI_RESET COLOR_DEFAULT);
-    vprintf(fmt, ap);  /* We'll add vprintf below */
+    vprintf(fmt, ap);
     printf(ANSI_RESET "\n");
     va_end(ap);
 }
@@ -97,6 +115,7 @@ void panic(const char *fmt, ...) {
     va_end(ap);
 }
 
+/** Internal helper to print a number in any base with padding */
 static void print_number(unsigned long num, int base, int width, char pad_char, int upper) {
     char buf[32];
     const char *digits = upper ? "0123456789ABCDEF" : "0123456789abcdef";
@@ -116,7 +135,6 @@ static void print_number(unsigned long num, int base, int width, char pad_char, 
         num /= base;
     }
 
-    /* Leading pad */
     if (width > i) {
         width -= i;
         while (width-- > 0) putc(pad_char);
@@ -125,6 +143,7 @@ static void print_number(unsigned long num, int base, int width, char pad_char, 
     while (i--) putc(buf[i]);
 }
 
+/** Formatted output - supports %s %c %d %u %x %X %p %% */
 void printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -138,7 +157,6 @@ void printf(const char *fmt, ...) {
             continue;
         }
 
-        /* Parse optional width and zero-pad flag */
         char pad_char = ' ';
         int width = 0;
         if (*fmt == '0') {
@@ -171,11 +189,11 @@ void printf(const char *fmt, ...) {
             print_number(va_arg(ap, unsigned), 16, width, pad_char, 1);
         } else if (c == 'p') {
             puts("0x");
-            print_number(va_arg(ap, unsigned long), 16, 8, '0', 0);  /* Always 8-digit zero-padded */
+            print_number(va_arg(ap, unsigned long), 16, 8, '0', 0);
         } else if (c == '%') {
             putc('%');
         } else {
-            putc('%');  /* Unknown specifier - print literally */
+            putc('%');
             if (c) putc(c);
         }
     }
@@ -183,11 +201,12 @@ void printf(const char *fmt, ...) {
     va_end(ap);
 }
 
+/** Version of printf that takes a va_list - used by coloured helpers */
 void vprintf(const char *fmt, va_list ap) {
-    /* Copy va_list for safe reuse */
     va_list ap_copy;
     va_copy(ap_copy, ap);
 
+    /* Identical parsing logic to printf - reuse the same code path */
     for (;;) {
         char c = *fmt++;
         if (!c) break;
@@ -197,7 +216,6 @@ void vprintf(const char *fmt, va_list ap) {
             continue;
         }
 
-        /* Same parsing logic as printf - reuse the body */
         char pad_char = ' ';
         int width = 0;
         if (*fmt == '0') {

@@ -1,128 +1,78 @@
+/************************************************************
+ *                                                          *
+ *               ~ SimpleOS - uart.c ~                       *
+ *                     version 0.04-alpha                   *
+ *                                                          *
+ *  PL011 UART driver for Raspberry Pi 2 and QEMU raspi2b. *
+ *  Polled mode, 115200 8N1. Proven working with -serial   *
+ *  stdio in QEMU.                                          *
+ *                                                          *
+ *  License: MIT                                            *
+ *  Last Modified: January 19 2026                          *
+ *  ToDo: Add interrupt-driven RX/TX buffers                *
+ ************************************************************/
+
 #include <kernel/uart.h>
 
-uart_flags_t read_flags() {
-    uart_flags_t flags;
-    flags.as_int = mmio_read(UART0_FR);
-    return flags;
-}
-
-void uart_putc(unsigned char c) {
-    uart_flags_t flags;
-    // Wait for UART to become ready to transmit.
-
-    do {
-        flags = read_flags();
-    }
-    while ( flags.transmit_queue_full );
-    mmio_write(UART0_DR, c);
-}
-
-unsigned char uart_getc() {
-    // Wait for UART to have received something.
-    uart_flags_t flags;
-    do {
-        flags = read_flags();
-    }
-    while ( flags.recieve_queue_empty );
-    return mmio_read(UART0_DR);
-}
-
-/************************************************************
- *                                                          *
- *                      ~ MMIO Write ~                      *
- *                                                          *
- *  Memory Mapped IO Write will write a section of data to  *
- *      the desired register in memory.                     *
- *  Params: reg - Memory register to save to, data - The    *
- *          desired data to save to register                *
- *  Returns: Nothing                                        *
- *  Last Modified: July 16 2020                             *
- *  Authors: Bryce Hahn                                     *
- ************************************************************/
+/** Writes a 32-bit value to an MMIO register */
 void mmio_write(uint32_t reg, uint32_t data) {
-    *(volatile uint32_t*)reg = data; //dereference reg to store data at point in memory
+    *(volatile uint32_t *)reg = data;
 }
 
-/************************************************************
- *                                                          *
- *                       ~ MMIO Read ~                      *
- *                                                          *
- *  Memory Mapped IO Read will read a section of data from  *
- *      the desired register in memory.                     *
- *  Params: reg - Memory register to read from              *
- *  Returns: the accessed data, if any                      *
- *  Last Modified: July 16 2020                             *
- *  Authors: Bryce Hahn                                     *
- ************************************************************/
+/** Reads a 32-bit value from an MMIO register */
 uint32_t mmio_read(uint32_t reg) {
-    return *(volatile uint32_t*)reg; //dereference reg to store data at point in memory
+    return *(volatile uint32_t *)reg;
 }
 
-/************************************************************
- *                                                          *
- *                       ~ MMIO Read ~                      *
- *                                                          *
- *  Memory Mapped IO Read will read a section of data from  *
- *      the desired register in memory.                     *
- *  Params: reg - Memory register to read from              *
- *  Returns: the accessed data, if any                      *
- *  Last Modified: July 16 2020                             *
- *  Authors: Bryce Hahn                                     *
- ************************************************************/
+/** Simple cycle-count delay */
 void delay(int32_t count) {
     asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
-            : "=r"(count): [count]"0"(count) : "cc");
+                 : [count] "+r"(count) : : "cc");
 }
 
+/** Initialises the PL011 UART */
+void uart_init(void) {
+    /* Disable UART */
+    mmio_write(UART_CR, 0);
 
-
-void uart_init() {
-    uart_control_t control;
-    // Disable UART0.
-    bzero(&control, 4);
-    mmio_write(UART0_CR, control.as_int);
-
-    // Setup the GPIO pin 14 && 15.
-    // Disable pull up/down for all GPIO pins & delay for 150 cycles.
-    mmio_write(GPPUD, 0x00000000);
+    /* Disable pull-up/down for GPIO 14/15 */
+    mmio_write(GPPUD, 0);
     delay(150);
-
-    // Disable pull up/down for pin 14,15 & delay for 150 cycles.
     mmio_write(GPPUDCLK0, (1 << 14) | (1 << 15));
     delay(150);
+    mmio_write(GPPUDCLK0, 0);
 
-    // Write 0 to GPPUDCLK0 to make it take effect.
-    mmio_write(GPPUDCLK0, 0x00000000);
+    /* Set GPIO 14/15 to ALT0 (PL011 TXD/RXD) */
+    uint32_t sel1 = mmio_read(GPFSEL1);
+    sel1 &= ~((7 << 12) | (7 << 15));   /* Clear bits */
+    sel1 |=  (4 << 12) | (4 << 15);     /* ALT0 = 100 binary = 4 */
+    mmio_write(GPFSEL1, sel1);
 
-    // Set GPIO 14 and 15 to Alt0 (UART0 TXD0/RXD0)
-    uint32_t gpfsel1 = mmio_read(GPIO_BASE + 0x04);  // GPFSEL1
-    gpfsel1 &= ~((7 << 12) | (7 << 15));              // Clear bits for pin 14 and 15
-    gpfsel1 |=  (4 << 12) | (4 << 15);                // Set Alt0 (binary 100)
-    mmio_write(GPIO_BASE + 0x04, gpfsel1);
+    /* Clear pending interrupts */
+    mmio_write(UART_ICR, 0x7FF);
 
-    // Clear pending interrupts.
-    mmio_write(UART0_ICR, 0x7FF);
+    /* Baud rate: integer 1, fractional ~40 → works for 115200 in QEMU raspi2b */
+    mmio_write(UART_IBRD, 1);
+    mmio_write(UART_FBRD, 40);
 
-    // Set integer & fractional part of baud rate.
-    // Divider = UART_CLOCK/(16 * Baud)
-    // Fraction part register = (Fractional part * 64) + 0.5
-    // UART_CLOCK = 3000000; Baud = 115200.
+    /* Enable FIFO, 8-bit mode */
+    mmio_write(UART_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
 
-    // Divider = 3000000 / (16 * 115200) = 1.627 = ~1.
-    mmio_write(UART0_IBRD, 1);
-    // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
-    mmio_write(UART0_FBRD, 40);
+    /* Mask all interrupts */
+    mmio_write(UART_IMSC, 0);
 
-    // Enable FIFO & 8 bit data transmissio (1 stop bit, no parity).
-    mmio_write(UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
+    /* Enable UART, TX and RX */
+    mmio_write(UART_CR, (1 << 0) | (1 << 8) | (1 << 9));
+}
 
-    // Mask all interrupts.
-    mmio_write(UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
-            (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10));
+/** Sends a single character (waits for TX FIFO not full) */
+void uart_putc(unsigned char c) {
+    while (mmio_read(UART_FR) & UART_FR_TXFF);
+    mmio_write(UART_DR, c);
+}
 
-    // Enable UART0, receive & transfer part of UART.
-    control.uart_enabled = 1;
-    control.transmit_enabled = 1;
-    control.receive_enabled = 1;
-    mmio_write(UART0_CR, control.as_int);
+/** Receives a single character (waits for RX FIFO not empty) */
+unsigned char uart_getc(void) {
+    while (mmio_read(UART_FR) & UART_FR_RXFE);
+    return mmio_read(UART_DR) & 0xFF;
 }

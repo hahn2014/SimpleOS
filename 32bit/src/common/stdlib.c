@@ -1,5 +1,19 @@
+/************************************************************
+ *                                                          *
+ *              ~ SimpleOS - stdlib.c ~                     *
+ *                     version 0.04-alpha                   *
+ *                                                          *
+ *  Minimal implementations of common libc functions.       *
+ *  Optimised for size rather than maximum speed.           *
+ *                                                          *
+ *  License: MIT                                            *
+ *  Last Modified: January 19 2026                          *
+ *  ToDo: Add memset and word-aligned memcpy optimisation   *
+ ************************************************************/
+
 #include <common/stdlib.h>
 
+/** Simple byte-by-byte memory copy */
 void memcpy(void* dest, void* src, int bytes) {
     char *d = dest, *s = src;
     while (bytes--) {
@@ -7,6 +21,7 @@ void memcpy(void* dest, void* src, int bytes) {
     }
 }
 
+/** Zero a block of memory */
 void bzero(void* dest, int bytes) {
     char* d = dest;
     while (bytes--) {
@@ -14,6 +29,7 @@ void bzero(void* dest, int bytes) {
     }
 }
 
+/** Integer to decimal string - uses static buffer (not re-entrant) */
 char* itoa(int i) {
     static char intbuf[12];
     int j = 0, isneg = 0;
@@ -38,19 +54,21 @@ char* itoa(int i) {
         intbuf[j++] = '-';
 
     intbuf[j] = '\0';
+    /* Reverse */
     j--;
-    i = 0;
-    while (i < j) {
-        isneg = intbuf[i];
-        intbuf[i] = intbuf[j];
-        intbuf[j] = isneg;
-        i++;
+    int start = 0;
+    while (start < j) {
+        char tmp = intbuf[start];
+        intbuf[start] = intbuf[j];
+        intbuf[j] = tmp;
+        start++;
         j--;
     }
 
     return intbuf;
 }
 
+/** Standard lexicographical string compare */
 int strcmp(const char *s1, const char *s2) {
     const unsigned char *p1 = (const unsigned char *)s1;
     const unsigned char *p2 = (const unsigned char *)s2;
