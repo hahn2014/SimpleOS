@@ -6,7 +6,7 @@
  *  Provides ~100 Hz tick for uptime and simple delays.     *
  *                                                          *
  *  License: MIT                                            *
- *  Last Modified: January 19 2026                          *
+ *  Last Modified: January 21 2026                          *
  *  ToDo: Higher-resolution scheduling primitives           *
  ************************************************************/
 
@@ -14,6 +14,7 @@
 #include <kernel/uart.h>
 #include <kernel/mmio.h>
 #include <common/stdio.h>
+#include <kernel/scheduler.h>
 
 volatile uint32_t system_ticks = 0;
 

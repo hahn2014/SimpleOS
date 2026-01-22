@@ -6,7 +6,7 @@
  *  system control and debugging commands.                  *
  *                                                          *
  *  License: MIT                                            *
- *  Last Modified: January 19 2026                          *
+ *  Last Modified: January 21 2026                          *
  *  ToDo: Add command history and line editing              *
  ************************************************************/
 
@@ -15,6 +15,7 @@
 #include <kernel/mem.h>
 #include <kernel/timer.h>
 #include <kernel/mmio.h>
+#include <kernel/scheduler.h>
 
 /** Prints the list of available shell commands */
 static void cmd_help(void) {
@@ -22,6 +23,7 @@ static void cmd_help(void) {
            "  help       - Show this help\n"
            "  meminfo    - Display memory statistics\n"
            "  uptime     - Show system uptime\n"
+           "  schedule   - Lists scheduled tasks\n"
            "  shutdown   - Halt the system safely\n"
            "  reboot     - Restart the kernel\n"
            "  test_undef - Trigger Undefined Instruction exception\n"
@@ -85,6 +87,21 @@ static void cmd_uptime(void) {
     printf("Uptime: %u ticks (~%u.%02u seconds)\n", ticks, ticks / 100, ticks % 100);
 }
 
+static void cmd_scheduler(void) {
+    info("Printing System Task Schedule:");
+    const char *tasks[16];
+    size_t n = get_schedule(tasks, 16);
+
+    if (tasks[0] == NULL) {
+        info("Scheduler is empty!");
+        return; //break if no tasks in scheduler
+    } else {
+        for (size_t i = 0; i < n; i++) {
+            info("Task %d: %s", i, tasks[i]);
+        }
+    }
+}
+
 /** Triggers an Undefined Instruction exception for testing */
 static void cmd_test_undef(void) {
     warning("Triggering Undefined Instruction exception...");
@@ -99,7 +116,7 @@ static void cmd_test_abort(void) {
 
 /** Entry point for the interactive shell - prints banner and enters command loop */
 void shell_run(void) {
-    printf("\n\nSimpleOS v0.05-alpha(arm32) - Interactive Shell\n\n\n");
+    printf("\n\nSimpleOS v0.06-alpha(arm32) - Interactive Shell\n\n\n");
     cmd_help();
 
     while (1) {
@@ -112,13 +129,14 @@ void shell_run(void) {
 
         if (buf[0] == '\0') continue;  /* Empty line */
 
-        if (strcmp(buf, "help") == 0)          cmd_help();
-        else if (strcmp(buf, "meminfo") == 0)  cmd_meminfo();
-        else if (strcmp(buf, "uptime") == 0)   cmd_uptime();
-        else if (strcmp(buf, "shutdown") == 0) cmd_shutdown();
-        else if (strcmp(buf, "reboot") == 0)   cmd_reboot();
-        else if (strcmp(buf, "test_undef") == 0) cmd_test_undef();
-        else if (strcmp(buf, "test_abort") == 0) cmd_test_abort();
+        if (strcmp(buf, "help") == 0)               cmd_help();
+        else if (strcmp(buf, "meminfo") == 0)       cmd_meminfo();
+        else if (strcmp(buf, "uptime") == 0)        cmd_uptime();
+        else if (strcmp(buf, "schedule") == 0)      cmd_scheduler();
+        else if (strcmp(buf, "shutdown") == 0)      cmd_shutdown();
+        else if (strcmp(buf, "reboot") == 0)        cmd_reboot();
+        else if (strcmp(buf, "test_undef") == 0)    cmd_test_undef();
+        else if (strcmp(buf, "test_abort") == 0)    cmd_test_abort();
         else printf("Unknown command: %s\n", buf);
     }
 }

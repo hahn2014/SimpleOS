@@ -5,7 +5,7 @@
 #  Build rules for the SimpleOS kernel (ARM cross-compile). *
 #                                                           *
 #  License: MIT                                             *
-#  Last Modified: January 19 2026                           *
+#  Last Modified: January 21 2026                           *
 #  ToDo: Add debug symbols stripping option                 *
 #************************************************************
 
@@ -24,7 +24,7 @@ else
     ARCHDIR = model2
 endif
 
-CFLAGS= -mcpu=$(CPU) -fpic -ffreestanding $(DIRECTIVES) -g
+CFLAGS= -mcpu=$(CPU) -ffreestanding $(DIRECTIVES) -g
 CSRCFLAGS= -O2 -Wall -Wextra
 LFLAGS= -ffreestanding -O2 -nostdlib
 

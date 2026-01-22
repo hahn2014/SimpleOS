@@ -7,7 +7,7 @@
  *  branch predictor. L1 table fixed at 0x00100000.         *
  *                                                          *
  *  License: MIT                                            *
- *  Last Modified: January 19 2026                          *
+ *  Last Modified: January 21 2026                          *
  *  ToDo: Fine-grained (4 KiB) pages and device mappings    *
  ************************************************************/
 
@@ -42,8 +42,27 @@ void mmu_init(void) {
     /* Identity map first 1 GiB (1024 × 1 MiB sections) */
     for (i = 0; i < 1024; i++) {
         uint32_t phys = i << 20;
-        l1_table[i] = phys | SECTION_AP_RW | SECTION_CB_11 |
-                      SECTION_DOMAIN0 | SECTION_XN | SECTION_TYPE;
+        uint32_t desc = phys
+                      | SECTION_TYPE
+                      | SECTION_DOMAIN0
+                      | SECTION_AP_RW
+                      | (1 << 16)           /* S=1 : shareable */
+                      | (0 << 4);           /* XN=0 for normal memory */
+
+        if (phys >= 0x3F000000UL) {
+            /* Device memory (shared device): non-cacheable */
+            desc |= (0b000 << 12)     /* TEX=000 */
+                  | (1 << 3)          /* B=1   */
+                  | (0 << 2)          /* C=0   */
+                  | (1 << 4);         /* XN=1 (prevent execution) */
+        } else {
+            /* Normal memory: write-back write-allocate cacheable */
+            desc |= (0b001 << 12)     /* TEX=001 */
+                  | (1 << 3)          /* B=1   */
+                  | (1 << 2);         /* C=1   */
+        }
+
+        l1_table[i] = desc;
     }
 
     /* Full invalidate of TLB and instruction cache */

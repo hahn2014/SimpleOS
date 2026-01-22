@@ -1,6 +1,6 @@
 # SimpleOS
 
-![Version](https://img.shields.io/badge/alpha-0.03-blue)
+![Version](https://img.shields.io/badge/alpha-0.06-blue)
 ![Raspberry Pi](https://img.shields.io/badge/Platform-Raspberry%20Pi-red?logo=raspberry-pi)
 ![Bare Metal](https://img.shields.io/badge/Type-Bare%20Metal%20OS-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
@@ -14,6 +14,7 @@ SimpleOS/
 ├── 32bit/          # Raspberry Pi 1, Zero, 2 (ARMv7/AArch32)
 ├── 64bit/          # Raspberry Pi 3, 4, 5 (AArch64)
 ├── common/         # Shared code (planned)
+├── LICENSE
 └── README.md
 
 The user-facing API and high-level design will be virtually identical across
@@ -23,23 +24,10 @@ UART drivers, and low-level initialisation.
 
 ## Development Status
 
-We are actively developing the **64-bit version** for Raspberry Pi 3, 4 & 5. The kernel currently:
-- Boots in AArch64 EL1
-- Initialises the PL011 UART for early console output
-- Provides a simple echoing terminal
-- Parks secondary cores safely
-- Builds with a clean, freestanding toolchain
-
-We are actively developing the **32-bit version** for Raspberry Pi 1, Zero & 2b. The kernel currently:
-- Boots in AArch32 EL1
-- Initialises the PL011 UART for early console output
-- Initializes memory stack and tests memory functions
-- Mini-shell with interactive user input. very basic with much more to come
-- Parks secondary cores safely
-- Builds with a clean, freestanding toolchain
+We are actively developing both the **32-bit and 64-bit version** for Raspberry Pi 1, Zero & 2b. Most up to date revision is v0.06-alpha. See roadmap bellow
 
 
-## Roadmap
+## Alpha Roadmap
 
 ### Phase 1 – Core Boot & Console (Current Focus)
 - [x] Multi-core safe boot (core 0 runs, others parked)
@@ -52,10 +40,10 @@ We are actively developing the **32-bit version** for Raspberry Pi 1, Zero & 2b.
 - [x] System timer interrupts
 
 ### Phase 2 – Memory & Scheduling
-- [ ] Physical memory manager (frame allocator)
+- [x] Physical memory manager (frame allocator)
 - [x] Virtual memory with page tables
-- [ ] Simple round-robin scheduler
-- [ ] Heap allocation (custom allocator)
+- [x] Simple round-robin scheduler
+- [x] Heap allocation (custom allocator)
 
 ### Phase 3 – Multi-Core & Concurrency
 - [ ] Wake secondary cores
@@ -94,7 +82,6 @@ To build and test SimpleOS, you will need:
 brew install qemu
 ```
 
-Then download and install the ARM GNU Toolchain from developer.arm.com
 #### Building & Running
 
 Inside the 64bit directory

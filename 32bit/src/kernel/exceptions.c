@@ -6,7 +6,7 @@
  *  fatal exceptions. IRQ handler forwards to timer.        *
  *                                                          *
  *  License: MIT                                            *
- *  Last Modified: January 19 2026                          *
+ *  Last Modified: January 21 2026                          *
  *  ToDo: Recoverable page fault handling                   *
  ************************************************************/
 
@@ -14,11 +14,15 @@
 #include <kernel/uart.h>
 #include <kernel/timer.h>
 #include <kernel/mmio.h>
+#include <kernel/scheduler.h>
 
 /* IRQ interrupt pointers */
 #define IRQ_BASIC_PENDING   0x3F00B200UL
 #define IRQ_PENDING1        0x3F00B204UL
 #define IRQ_PENDING2        0x3F00B208UL
+
+/* add extern for extended buffer */
+extern uint32_t interrupt_context[16];
 
 /* Forward declaration for UART handler (defined in uart.c) */
 void uart_irq_handler(void);
@@ -119,4 +123,21 @@ void irq_handler(void) {
         panic("Unhandled IRQ: basic=0x%08X pending1=0x%08X pending2=0x%08X",
               basic, pending1, pending2);
     }
+}
+
+void c_irq_handler(void) {
+    /* Always service UART - safe/idempotent */
+    uart_irq_handler();
+
+    /* Service system timer if pending */
+    uint32_t cs = mmio_read(TIMER_CS);
+    if (cs & TIMER_CS_M1) {
+        timer_handler();
+        schedule();                 /* Preemptive tick */
+        /* No return - schedule() restores new context and returns there */
+    }
+
+    /* If we reach here - unhandled source. For now silent
+        (common on real hardware). Later add pending register check. */
+    // panic("Unhandled IRQ source - TIMER_CS=0x%08X", cs);
 }
